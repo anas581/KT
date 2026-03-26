@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>KT | المجال المتألق</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* subtle, keeps text selectable if needed but we want clean feel */
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 30% 10%, #0b0c1a, #02010a);
+            font-family: 'Segoe UI', 'Tajawal', 'Cairo', 'Amiri', 'Poppins', system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* ---------- canvas particle background (dynamic art) ---------- */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* main glassmorphic card container */
+        .hero {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 1100px;
+            padding: 2rem;
+            margin: 2rem;
+            background: rgba(10, 12, 28, 0.45);
+            backdrop-filter: blur(12px);
+            border-radius: 4rem 2rem 4rem 2rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08) inset, 0 0 30px rgba(138, 43, 226, 0.2);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero:hover {
+            background: rgba(12, 14, 35, 0.6);
+            box-shadow: 0 30px 55px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 215, 0, 0.3) inset, 0 0 40px rgba(255, 100, 150, 0.3);
+            backdrop-filter: blur(16px);
+            transform: scale(1.01);
+        }
+
+        /* elegant text styling */
+        .arabic-title {
+            text-align: center;
+            font-size: clamp(2.8rem, 12vw, 6rem);
+            font-weight: 900;
+            letter-spacing: 0.02em;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: linear-gradient(135deg, #FFD166, #EF476F, #3A86FF);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 5s linear infinite, floatText 3s ease-in-out infinite;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            word-break: keep-all;
+            line-height: 1.3;
+            font-family: 'Tajawal', 'Cairo', 'Amiri', 'Segoe UI', cursive;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        @keyframes floatText {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* decorative underline / glow effect */
+        .title-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .glow-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 110%;
+            height: 130%;
+            transform: translate(-50%, -50%);
+            border-radius: 3rem;
+            background: radial-gradient(circle, rgba(255,209,102,0.2) 0%, rgba(239,71,111,0) 80%);
+            filter: blur(20px);
+            z-index: -1;
+            pointer-events: none;
+            animation: pulseRing 3s infinite alternate;
+        }
+
+        @keyframes pulseRing {
+            0% { opacity: 0.3; width: 100%; height: 110%;}
+            100% { opacity: 0.9; width: 115%; height: 140%;}
+        }
+
+        /* additional ornaments: animated decorative lines */
+        .ornament {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .ornament span {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #ffb347, #ff6b6b, #4c9aff);
+            border-radius: 4px;
+            animation: widthPulse 1.8s infinite alternate ease;
+        }
+
+        .ornament span:nth-child(2) { width: 80px; animation-delay: 0.3s; }
+        .ornament span:nth-child(3) { width: 40px; animation-delay: 0.6s; }
+
+        @keyframes widthPulse {
+            0% { opacity: 0.4; transform: scaleX(0.8); }
+            100% { opacity: 1; transform: scaleX(1.2); }
+        }
+
+        /* elegant micro footer */
+        .elegant-footer {
+            margin-top: 2.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 245, 0.7);
+            font-weight: 400;
+            border-top: 1px dashed rgba(255,255,200,0.25);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            backdrop-filter: blur(4px);
+        }
+
+        .elegant-footer span {
+            font-family: monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+        }
+
+        .elegant-footer .kt-symbol {
+            font-weight: 700;
+            background: linear-gradient(145deg, #ffaa44, #ff4488);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* mouse follower glow (extra decoration) */
+        .cursor-glow {
+            position: fixed;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(255,100,150,0.2) 0%, rgba(58,134,255,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.05s linear;
+            filter: blur(40px);
+            opacity: 0.5;
+        }
+
+        /* responsive touches */
+        @media (max-width: 680px) {
+            .hero {
+                padding: 1.2rem;
+                border-radius: 2rem 1rem 2rem 1rem;
+            }
+            .ornament span {
+                width: 35px;
+            }
+            .ornament span:nth-child(2) { width: 55px; }
+        }
+
+        /* additional shimmer overlay for dramatic entrance */
+        .entrance-fade {
+            animation: fadeSlideUp 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- interactive cursor aura (smooth glow) -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- animated particle canvas network (dynamic background) -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- main decorated content -->
+    <div class="hero entrance-fade">
+        <div class="ornament">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="title-wrapper" style="position: relative;">
+            <div class="glow-ring"></div>
+            <h1 class="arabic-title">كسم توماس</h1>
+        </div>
+
+        <!-- subtle decorative divider with radiant icon -->
+        <div style="display: flex; justify-content: center; gap: 8px; margin: 12px 0 4px;">
+            <div style="width: 8px; height: 8px; background: #ffb347; border-radius: 50%; box-shadow: 0 0 6px #ffb347;"></div>
+            <div style="width: 8px; height: 8px; background: #ff6b6b; border-radius: 50%; box-shadow: 0 0 6px #ff6b6b;"></div>
+            <div style="width: 8px; height: 8px; background: #4c9aff; border-radius: 50%; box-shadow: 0 0 6px #4c9aff;"></div>
+        </div>
+        
+        <div class="elegant-footer">
+            <span>✨ KT VISION ✨</span>
+            <span class="kt-symbol">✦  luminous  ✦</span>
+            <span>∞  code & art  ∞</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ------------------------------
+            // 1) Dynamic Particle Network + smooth motion
+            // ------------------------------
+            const canvas = document.getElementById('particle-canvas');
+            let ctx = canvas.getContext('2d');
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            
+            let particles = [];
+            let particleCount = 110;
+            let connectionDistance = 130;
+            let mouseX = null, mouseY = null;
+            
+            // color palette : cosmic / neon fusion
+            const colorPalette = [
+                'rgba(255, 180, 70, 0.7)',   // warm gold
+                'rgba(255, 100, 150, 0.65)', // rose
+                'rgba(100, 180, 255, 0.7)',  // electric blue
+                'rgba(180, 130, 255, 0.7)',  // lavender
+                'rgba(80, 220, 180, 0.6)'    // mint aqua
+            ];
+            
+            class Particle {
+                constructor(x, y, radius, vx, vy, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.radius = radius;
+                    this.vx = vx;
+                    this.vy = vy;
+                    this.color = color;
+                    this.originalColor = color;
+                    this.baseRadius = radius;
+                }
+                
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    // boundary bounce with slight energy preservation
+                    if (this.x < 0) { this.x = 0; this.vx = -this.vx * 0.98; }
+                    if (this.x > width) { this.x = width; this.vx = -this.vx * 0.98; }
+                    if (this.y < 0) { this.y = 0; this.vy = -this.vy * 0.98; }
+                    if (this.y > height) { this.y = height; this.vy = -this.vy * 0.98; }
+                    
+                    // small drag for smoother motion
+                    this.vx *= 0.998;
+                    this.vy *= 0.998;
+                    
+                    // slight radius pulse (subtle life)
+                    this.radius = this.baseRadius + Math.sin(Date.now() * 0.002 * (this.x * 0.01)) * 0.3;
+                }
+                
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, Math.max(1.2, this.radius), 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = `rgba(255,200,100,0.5)`;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+            
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < particleCount; i++) {
+                    let radius = 2 + Math.random() * 4.5;
+                    let x = Math.random() * width;
+                    let y = Math.random() * height;
+                    let vx = (Math.random() - 0.5) * 0.45;
+                    let vy = (Math.random() - 0.5) * 0.45;
+                    let color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                    particles.push(new Particle(x, y, radius, vx, vy, color));
+                }
+            }
+            
+            function drawConnections() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const distance = Math.hypot(dx, dy);
+                        if (distance < connectionDistance) {
+                            let opacity = (1 - distance / connectionDistance) * 0.45;
+                            let gradient = ctx.createLinearGradient(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
+                            gradient.addColorStop(0, `rgba(210, 160, 255, ${opacity * 0.9})`);
+                            gradient.addColorStop(1, `rgba(80, 200, 255, ${opacity * 0.7})`);
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = gradient;
+                            ctx.lineWidth = 1.2;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+            
+            // mouse interaction: influence particles slightly (gentle attraction)
+            function applyMouseInfluence() {
+                if (mouseX !== null && mouseY !== null) {
+                    for (let p of particles) {
+                        let dx = p.x - mouseX;
+                        let dy = p.y - mouseY;
+                        let dist = Math.hypot(dx, dy);
+                        if (dist < 140) {
+                            let force = (1 - dist / 140) * 0.08;
+                            let angle = Math.atan2(dy, dx);
+                            p.vx += Math.cos(angle) * force * 0.6;
+                            p.vy += Math.sin(angle) * force * 0.6;
+                            // limit velocity burst
+                            let maxSpeed = 1.8;
+                            if (Math.abs(p.vx) > maxSpeed) p.vx = p.vx > 0 ? maxSpeed : -maxSpeed;
+                            if (Math.abs(p.vy) > maxSpeed) p.vy = p.vy > 0 ? maxSpeed : -maxSpeed;
+                            
+                            // also dynamic color highlight when mouse near
+                            p.color = `rgba(255, 210, 90, 0.9)`;
+                        } else {
+                            // fade back to original color gradually
+                            if (p.color !== p.originalColor) {
+                                p.color = p.originalColor;
+                            }
+                        }
+                    }
+                } else {
+                    // reset all colors
+                    for (let p of particles) {
+                        if (p.color !== p.originalColor) p.color = p.originalColor;
+                    }
+                }
+            }
+            
+            function animateParticles() {
+                if (!ctx) return;
+                ctx.clearRect(0, 0, width, height);
+                // draw translucent background to give trail effect? but we want crisp look: full clear each frame.
+                // also extra layered gradient effect
+                let grad = ctx.createLinearGradient(0, 0, width*0.8, height);
+                grad.addColorStop(0, 'rgba(5, 3, 18, 0.1)');
+                grad.addColorStop(1, 'rgba(20, 12, 40, 0.05)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+                
+                applyMouseInfluence();
+                for (let p of particles) {
+                    p.update();
+                }
+                drawConnections();
+                for (let p of particles) {
+                    p.draw();
+                }
+                requestAnimationFrame(animateParticles);
+            }
+            
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                initParticles();
+            }
+            
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+            });
+            canvas.addEventListener('mouseleave', () => {
+                mouseX = null;
+                mouseY = null;
+            });
+            
+            resizeCanvas();
+            animateParticles();
+            
+            // 2) cursor glow effect (luxury)
+            const cursorGlow = document.getElementById('cursorGlow');
+            if (cursorGlow) {
+                document.addEventListener('mousemove', (e) => {
+                    cursorGlow.style.left = e.clientX + 'px';
+                    cursorGlow.style.top = e.clientY + 'px';
+                });
+                document.addEventListener('mouseleave', () => {
+                    cursorGlow.style.opacity = '0';
+                });
+                document.addEventListener('mouseenter', () => {
+                    cursorGlow.style.opacity = '0.6';
+                });
+            }
+            
+            // 3) additional dramatic spark on load: subtle burst
+            const heroDiv = document.querySelector('.hero');
+            if (heroDiv) {
+                heroDiv.style.opacity = '0';
+                setTimeout(() => {
+                    heroDiv.style.opacity = '1';
+                }, 50);
+            }
+            
+            // 4) random floating particles of light? already have canvas network
+            // Also add a tiny ambient light reflection to the title: dynamic micro shadow rotation based on mouse? (optional)
+            const title = document.querySelector('.arabic-title');
+            if (title) {
+                document.addEventListener('mousemove', (e) => {
+                    let xAxis = (window.innerWidth / 2 - e.pageX) / 40;
+                    let yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+                    title.style.textShadow = `${xAxis * 0.8}px ${yAxis * 0.6}px 18px rgba(0,0,0,0.5), 0 0 25px rgba(255,180,80,0.4)`;
+                });
+            }
+            
+            // 5) extra particle: occasional tiny flare effect (no performance overhead)
+            setInterval(() => {
+                if (particles.length && Math.random() > 0.75) {
+                    for (let i = 0; i < 3; i++) {
+                        let p = particles[Math.floor(Math.random() * particles.length)];
+                        if (p) {
+                            p.color = `rgba(255, 220, 100, 1)`;
+                            setTimeout(() => {
+                                if (p && p.originalColor) p.color = p.originalColor;
+                            }, 180);
+                        }
+                    }
+                }
+            }, 1200);
+        })();
+    </script>
+</body>
+</html>
